@@ -31,14 +31,14 @@ jupyter nbconvert --to notebook --execute 00_setup.ipynb --inplace && ^
 python intelligence.py && ^
 jupyter nbconvert --to notebook --execute gradio_app.ipynb --inplace
 
-
+```
 ---
 
 ## Pipeline Breakdown
 
 ### 1. Data Pipeline (one-time ingestion)
 
-```
+
 Raw CSV (3,400 schemes)
     │
     ├── 00_ingest_csv         → raw_data Delta table
@@ -64,17 +64,18 @@ Raw CSV (3,400 schemes)
 **Total end-to-end: ~8-12 seconds**, with streaming making first-token appear in ~5s.
 
 
-
-
-### 3. WhatsApp Pipeline (additional layer)
-
 ```
+
+
+
+
 
 ### Architecture
 
 <img width="737" height="1004" alt="image" src="https://github.com/user-attachments/assets/00f3d9fc-13a9-4a00-be89-03fa45fb8cf8" />
 
 
+### 3. WhatsApp Pipeline (additional layer)
 
 WhatsApp Message
     ↓
