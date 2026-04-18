@@ -32,85 +32,6 @@ python intelligence.py && ^
 jupyter nbconvert --to notebook --execute gradio_app.ipynb --inplace
 
 
-## Architecture Diagram
-
----
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                          USER INTERFACES                               │
-│                                                                        │
-│   ┌──────────────────┐              ┌────────────────────────────┐    │
-│   │  Gradio Web App  │              │  WhatsApp Bot              │    │
-│   │  (Databricks)    │              │  (FastAPI + Twilio)        │    │
-│   └────────┬─────────┘              └──────────────┬─────────────┘    │
-│            │                                       │                  │
-│            │                                       ▼                  │
-│            │                        ┌──────────────────────────┐      │
-│            │                        │  Cloudflare Tunnel       │      │
-│            │                        │  + Redis session cache   │      │
-│            │                        └──────────────┬───────────┘      │
-└────────────┼───────────────────────────────────────┼──────────────────┘
-             │                                       │
-             ▼                                       ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                    INTELLIGENCE LAYER (Databricks)                     │
-│                                                                        │
-│   ┌──────────────────────────────────────────────────────────────┐    │
-│   │  SARVAM AI (Indian-language translation gateway)             │    │
-│   │  input: any Indic lang → English  |  output: English → user  │    │
-│   └─────────────────────────┬────────────────────────────────────┘    │
-│                             ▼                                          │
-│   ┌──────────────────────────────────────────────────────────────┐    │
-│   │  ROUTER + PROFILE EXTRACTOR  (1 Llama 3.3 call)              │    │
-│   │  Returns: intent + merged profile JSON                       │    │
-│   └─────────────────────────┬────────────────────────────────────┘    │
-│                             ▼                                          │
-│        ┌──────────────┬─────────────────┬──────────────┐              │
-│        ▼              ▼                 ▼              ▼              │
-│   ┌─────────┐   ┌───────────┐    ┌───────────┐  ┌──────────┐         │
-│   │DISCOVERY│   │ FOLLOWUP  │    │ GREETING  │  │ OFFTOPIC │         │
-│   └────┬────┘   └─────┬─────┘    └───────────┘  └──────────┘         │
-│        ▼              ▼                                                │
-│  ┌──────────┐   ┌──────────────┐                                      │
-│  │ MATCHER  │   │ RAG          │                                      │
-│  │ SQL +    │   │ section-aware│                                      │
-│  │ FAISS    │   │ chunk lookup │                                      │
-│  │ top 10   │   └──────┬───────┘                                      │
-│  └────┬─────┘          │                                               │
-│       ▼                ▼                                               │
-│  ┌──────────────┐  ┌─────────────┐                                    │
-│  │ ACTION PLAN  │  │ LLM Answer  │                                    │
-│  │ streaming    │  │ from chunks │                                    │
-│  │ Hindi output │  │ only        │                                    │
-│  └──────┬───────┘  └──────┬──────┘                                    │
-│         └──────┬──────────┘                                            │
-│                ▼                                                       │
-│   ┌────────────────────────┐                                          │
-│   │  MLflow async log      │                                          │
-│   │  + unanswered Delta    │                                          │
-│   └────────────────────────┘                                          │
-└─────────────────┬──────────────────────────────────────────────────────┘
-                  │
-                  ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                     DATA LAYER (Databricks)                            │
-│                                                                        │
-│   Unity Catalog: sarkarimitracatalog.sarkaridatabase                   │
-│                                                                        │
-│   ┌─────────────────────────┐  ┌─────────────────────────┐            │
-│   │  schemes_structured     │  │  scheme_chunks          │            │
-│   │  (Delta — 3,400 rows)   │  │  (Delta — ~40k chunks)  │            │
-│   │  SQL filters run here   │  │  RAG context lives here │            │
-│   └─────────────────────────┘  └─────────────────────────┘            │
-│                                                                        │
-│   ┌─────────────────────────┐  ┌─────────────────────────┐            │
-│   │  FAISS index on DBFS    │  │  user_profiles (Delta)  │            │
-│   │  /Volumes/.../faiss.bin │  │  long-term memory       │            │
-│   └─────────────────────────┘  └─────────────────────────┘            │
-└────────────────────────────────────────────────────────────────────────┘
-```
-
 ---
 
 ## Pipeline Breakdown
@@ -142,9 +63,19 @@ Raw CSV (3,400 schemes)
 
 **Total end-to-end: ~8-12 seconds**, with streaming making first-token appear in ~5s.
 
+
+
+
 ### 3. WhatsApp Pipeline (additional layer)
 
 ```
+
+### Architecture
+
+<img width="737" height="1004" alt="image" src="https://github.com/user-attachments/assets/00f3d9fc-13a9-4a00-be89-03fa45fb8cf8" />
+
+
+
 WhatsApp Message
     ↓
 Twilio Webhook
