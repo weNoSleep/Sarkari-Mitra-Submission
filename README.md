@@ -34,6 +34,8 @@ jupyter nbconvert --to notebook --execute gradio_app.ipynb --inplace
 
 ## Architecture Diagram
 
+---
+
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │                          USER INTERFACES                               │
