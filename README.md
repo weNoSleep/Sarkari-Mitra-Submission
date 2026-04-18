@@ -12,6 +12,26 @@ Sarkari-Mitra is a bilingual AI advisor that helps Indian citizens navigate 3,40
 
 ---
 
+### Quick Start (Local Execution)
+
+To run the project locally, open your terminal (Command Prompt or PowerShell) and run the following combined command. Ensure you have Python and Git installed.
+
+```cmd
+git clone https://github.com/weNoSleep/Sarkari-Mitra-Submission && ^
+cd sarkari_mitra && ^
+pip install -r requirements.txt && ^
+jupyter nbconvert --to notebook --execute data_pipeline/00_installs.ipynb --inplace && ^
+jupyter nbconvert --to notebook --execute data_pipeline/01_clean_validate.ipynb --inplace && ^
+jupyter nbconvert --to notebook --execute data_pipeline/02_chunk_text.ipynb --inplace && ^
+jupyter nbconvert --to notebook --execute data_pipeline/03_embed.ipynb --inplace && ^
+jupyter nbconvert --to notebook --execute data_pipeline/04_enrich_overlap.ipynb --inplace && ^
+jupyter nbconvert --to notebook --execute data_pipeline/05_enrich_cluster.ipynb --inplace && ^
+jupyter nbconvert --to notebook --execute data_pipeline/06_priority_rules.ipynb --inplace && ^
+jupyter nbconvert --to notebook --execute 00_setup.ipynb --inplace && ^
+python intelligence.py && ^
+jupyter nbconvert --to notebook --execute gradio_app.ipynb --inplace
+
+
 ## Architecture Diagram
 
 ```
